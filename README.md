@@ -1,10 +1,10 @@
 # AI Automation Builds
 
-**Five working AI agents that replace real jobs.**
+**Five working AI agents that take over specific manual tasks.**
 
 Small businesses lose leads because nobody answers the phone. Receipts get filed
-by hand. Sales calls aren't prepared. This repo is five finished builds that fix
-those problems — each one running, each one deployable.
+by hand. Sales calls aren't prepared. This repo is five finished builds that
+address those tasks — each one running, each one deployable.
 
 ---
 
@@ -22,14 +22,14 @@ those problems — each one running, each one deployable.
 
 ## Why these five
 
-They're ordered from simple to genuinely advanced, and they all come from
-complaints business owners actually have:
+They're ordered from simple to genuinely advanced, and each one addresses a task
+that small businesses do by hand and lose money on:
 
-- *"I find the receipts at the end of the month and it's a mess."*
-- *"People message at 9pm and get an answer at 9am the next day. By then they've
-  called someone else."*
-- *"I spend twenty minutes on every call figuring out what the last call was
-  about."*
+- Filing receipts at the end of the month, from photographs
+- Answering website enquiries that arrive after hours
+- Calling back a lead while they're still on your competitor's site
+- Walking into a sales call without knowing the last conversation
+- Booking a call with someone who was never going to buy
 
 Each build is a complete n8n workflow. Not a tutorial — a working file you
 import and run.
@@ -107,13 +107,11 @@ and rebuild it for a different business.
 
 ## What's next
 
-This is the first module of a larger program. Done and shipped: 5 builds.
+This is the first module of a larger program. Done: 5 builds.
 In progress: AI Automations (lead qualifier, voice agent, proposal generator).
 Not started: Vibe Coding, AI Agent Workforces.
 
 New builds get added here as they're finished.
-
----
 
 The `.docx` files are original briefs and prompts — keep or remove them as suits
 you.
