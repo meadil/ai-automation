@@ -1,0 +1,19 @@
+# n8n workflows (keep JSON)
+# *.json
+
+# Large binary docs (optional - keep for reference)
+# *.docx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local

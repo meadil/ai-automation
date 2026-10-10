@@ -1,0 +1,185 @@
+{
+  "name": "Solar Estimate",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "address"
+            },
+            {
+              "name": "monthlyBill",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "ff6c4ed5-5b46-49fe-890a-bbcf9671dd9d",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://developer.nlr.gov/api/pvwatts/v8.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "YOUR_NREL_API_KEY_HERE"
+            },
+            {
+              "name": "lat",
+              "value": "={{ $json.lat }}"
+            },
+            {
+              "name": "lon",
+              "value": "={{ $json.lon }}"
+            },
+            {
+              "name": "system_capacity",
+              "value": "1"
+            },
+            {
+              "name": "module_type",
+              "value": "0"
+            },
+            {
+              "name": "losses",
+              "value": "14"
+            },
+            {
+              "name": "array_type",
+              "value": "1"
+            },
+            {
+              "name": "tilt",
+              "value": "20"
+            },
+            {
+              "name": "azimuth",
+              "value": "180"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b9ddd51e-ccaa-422d-be12-e95eff97654d",
+      "name": "Get Solar Data (PVWatts)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://nominatim.openstreetmap.org/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-solar-estimate-tutorial/1.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f31b5139-b2ec-45bf-8769-4be79ddd9206",
+      "name": "Geocode Address (Nominatim)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const solar = $input.item.json;\nconst trigger = $('When Executed by Another Workflow').item.json;\n\n// ac_annual = kWh produced per year by a 1kW reference system at this location\nconst acAnnualPerKw = solar.outputs?.ac_annual ?? null;\nconst monthlyBill = Number(trigger.monthlyBill) || null;\n\n// Assumptions - adjust as needed\nconst assumedRate = 0.15; // $/kWh average utility rate\nconst panelWattage = 400; // watts per panel\n\nconst monthlyUsageKwh = monthlyBill ? monthlyBill / assumedRate : null;\nconst annualUsageKwh = monthlyUsageKwh ? monthlyUsageKwh * 12 : null;\nconst requiredSystemKw = (annualUsageKwh && acAnnualPerKw) ? annualUsageKwh / acAnnualPerKw : null;\nconst maxPanels = requiredSystemKw ? Math.ceil((requiredSystemKw * 1000) / panelWattage) : null;\nconst estimatedAnnualSavingsUsd = annualUsageKwh ? Math.round(annualUsageKwh * assumedRate) : null;\n\nif (!acAnnualPerKw) {\n  return [{ json: { error: 'Could not find solar data for this address. Please check the address and try again.' } }];\n}\n\nreturn [{\n  json: {\n    address: trigger.address,\n    monthlyBill,\n    maxPanels,\n    estimatedYearlyEnergyKwh: annualUsageKwh ? Math.round(annualUsageKwh) : null,\n    estimatedAnnualSavingsUsd,\n    notes: 'Estimate based on NREL PVWatts solar production data for this location, sized to roughly offset current usage at an assumed $0.15/kWh rate. Actual results vary by roof condition, shading, and local rates/incentives.'\n  }\n}];"
+      },
+      "id": "e730b240-4d50-424c-86b8-61335ff3daa8",
+      "name": "Format Solar Estimate Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        544
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Geocode Address (Nominatim)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Solar Data (PVWatts)": {
+      "main": [
+        [
+          {
+            "node": "Format Solar Estimate Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocode Address (Nominatim)": {
+      "main": [
+        [
+          {
+            "node": "Get Solar Data (PVWatts)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "778b698d-c352-4f86-a11d-4f73a61d5817",
+  "meta": {
+    "instanceId": "85fef67fa0f44bce2e72b68e8168ac57cd888191ca171efe3a016cba426756cf"
+  },
+  "nodeGroups": [],
+  "id": "NmuZCVWqhxRK16fT",
+  "tags": []
+}

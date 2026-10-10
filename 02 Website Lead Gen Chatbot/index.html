@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smith's Solar | Texas' #1 Rated Solar Panel Installation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .logo span {
+            color: #2c3e50;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #f39c12;
+        }
+
+        .cta-nav {
+            background: #f39c12;
+            color: #fff !important;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+
+        .cta-nav:hover {
+            background: #e67e22;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);
+            color: #fff;
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: #f39c12;
+            color: #fff;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #e67e22;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            padding: 1rem 2.5rem;
+            border: 2px solid #fff;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #fff;
+            color: #1a5276;
+        }
+
+        /* Stats */
+        .stats {
+            background: #fff;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .stats-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-item h3 {
+            font-size: 2.5rem;
+            color: #f39c12;
+        }
+
+        .stat-item p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* Services */
+        .services {
+            padding: 4rem 2rem;
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .services-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-card h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-card p {
+            color: #666;
+        }
+
+        /* Why Choose Us */
+        .why-us {
+            padding: 4rem 2rem;
+            background: #fff;
+        }
+
+        .why-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .why-item {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .why-item h4 {
+            color: #2c3e50;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .why-item p {
+            color: #666;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 4rem 2rem;
+            background: #f8f9fa;
+        }
+
+        .testimonials-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial-card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .testimonial-card .stars {
+            color: #f39c12;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-card p {
+            color: #555;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-author {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: #fff;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+
+        .btn-white {
+            background: #fff;
+            color: #f39c12;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-white:hover {
+            transform: scale(1.05);
+        }
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: #fff;
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col h4 {
+            margin-bottom: 1rem;
+            color: #f39c12;
+        }
+
+        .footer-col p, .footer-col a {
+            color: #bbb;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-col a:hover {
+            color: #f39c12;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #444;
+            color: #888;
+        }
+
+        /* Chat Widget Placeholder */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #f39c12;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 999;
+            transition: transform 0.3s;
+        }
+
+        .chat-widget:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-widget svg {
+            width: 30px;
+            height: 30px;
+            fill: #fff;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">Smith's <span>Solar</span></div>
+            <ul class="nav-links">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#why-us">Why Us</a></li>
+                <li><a href="#testimonials">Reviews</a></li>
+                <li><a href="#contact" class="cta-nav">Get Free Quote</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Power Your Home With Texas Sunshine</h1>
+        <p>Join 2,000+ Texas homeowners who have cut their electricity bills by up to 90% with custom solar panel installations.</p>
+        <div class="hero-buttons">
+            <a href="#contact" class="btn-primary">Get My Free Estimate</a>
+            <a href="#services" class="btn-secondary">Learn More</a>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>2,000+</h3>
+                <p>Installations Completed</p>
+            </div>
+            <div class="stat-item">
+                <h3>$1.2M+</h3>
+                <p>Customer Savings Generated</p>
+            </div>
+            <div class="stat-item">
+                <h3>25-Year</h3>
+                <p>Panel Warranty</p>
+            </div>
+            <div class="stat-item">
+                <h3>4.9/5</h3>
+                <p>Google Review Rating</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section class="services" id="services">
+        <h2 class="section-title">Our Solar Services</h2>
+        <p class="section-subtitle">Custom solar solutions for every Texas home</p>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">☀️</div>
+                <h3>Residential Solar Installation</h3>
+                <p>Custom-designed solar panel systems engineered for your home's specific energy needs and roof configuration. We handle everything from permits to activation.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🔋</div>
+                <h3>Battery Storage Solutions</h3>
+                <p>Store excess solar energy with premium battery systems like Tesla Powerwall. Keep your home powered during outages and peak rate hours.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">📊</div>
+                <h3>Energy Monitoring</h3>
+                <p>Track your solar production and home energy consumption in real-time with our smart monitoring app. See exactly how much you're saving.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🏢</div>
+                <h3>Commercial Solar</h3>
+                <p>Help your business reduce operating costs with commercial solar installations. Tax credits and depreciation make it smarter than ever.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🔧</div>
+                <h3>Maintenance & Repair</h3>
+                <p>Annual inspections, cleaning, and repair services to keep your system performing at peak efficiency for decades.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💰</div>
+                <h3>Financing & Incentives</h3>
+                <p>$0-down financing options and help navigating the 30% federal tax credit plus Texas state incentives and rebates.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="why-us" id="why-us">
+        <h2 class="section-title">Why Texas Chooses Smith's Solar</h2>
+        <p class="section-subtitle">The local team you can trust</p>
+        <div class="why-grid">
+            <div class="why-item">
+                <h4>🏆 Texas-Based & Licensed</h4>
+                <p>Fully licensed and insured in Texas. We know local codes, HOA requirements, and utility interconnection processes.</p>
+            </div>
+            <div class="why-item">
+                <h4>⚡ 25-Year Warranty</h4>
+                <p>Industry-leading 25-year performance warranty on all panels and inverters. Your investment is protected.</p>
+            </div>
+            <div class="why-item">
+                <h4>💵 $0 Down Financing</h4>
+                <p>Flexible financing options with $0 down and monthly payments often lower than your current electric bill.</p>
+            </div>
+            <div class="why-item">
+                <h4>🛠️ In-House Installers</h4>
+                <p>No subcontractors. Our trained, in-house installation teams ensure quality from start to finish.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <h2 class="section-title">What Our Customers Say</h2>
+        <p class="section-subtitle">Real reviews from real Texas homeowners</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"Our electric bill went from $280/month to $12/month. The installation team was professional and finished in one day. Best decision we've made for our home."</p>
+                <div class="testimonial-author">— Sarah M., Austin, TX</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"Smith's Solar handled everything — permits, HOA approval, the works. The 30% federal tax credit plus their financing made it a no-brainer."</p>
+                <div class="testimonial-author">— James R., Dallas, TX</div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p>"We added a battery last year and during the winter storm we were the only house on our block with power. The system paid for itself in peace of mind alone."</p>
+                <div class="testimonial-author">— Maria L., San Antonio, TX</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="contact">
+        <h2>Ready to Cut Your Electric Bill?</h2>
+        <p>Get a free, no-obligation solar estimate for your home in under 60 seconds.</p>
+        <a href="#" class="btn-white" onclick="alert('Chat widget will open here once connected to N8N Chat UI!')">Start My Free Estimate</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Smith's Solar</h4>
+                <p>Texas' trusted solar panel installation company. Serving Austin, Dallas, San Antonio, Houston, and surrounding areas since 2018.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="#services">Residential Solar</a>
+                <a href="#services">Commercial Solar</a>
+                <a href="#services">Battery Storage</a>
+                <a href="#services">Maintenance</a>
+            </div>
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="#why-us">About Us</a>
+                <a href="#testimonials">Reviews</a>
+                <a href="#">Careers</a>
+                <a href="#">Blog</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <p>📍 1234 Energy Way, Austin, TX 78701</p>
+                <p>📞 (512) 555-SOLAR</p>
+                <p>✉️ hello@smithssolar.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Smith's Solar. All rights reserved. | Texas Licensed Electrical Contractor #TECL-12345</p>
+        </div>
+    </footer>
+
+    <!-- Chat Widget (N8N Chat UI) -->
+    <script type="module" defer>
+        import Chatbot from "https://cdn.n8nchatui.com/v1/embed.js";
+        Chatbot.init({
+            "n8nChatUrl": "https://half-unless-donor.ngrok-free.dev/webhook/solar-lead-chat/chat",
+            "metadata": {},
+            "theme": {
+                "button": {
+                    "backgroundColor": "#f39c12",
+                    "right": 20,
+                    "bottom": 20,
+                    "size": 60,
+                    "iconColor": "#ffffff",
+                    "customIconSrc": "https://www.svgrepo.com/show/525761/chat-round-dots.svg",
+                    "customIconSize": 30,
+                    "customIconBorderRadius": 15,
+                    "autoWindowOpen": {
+                        "autoOpen": false,
+                        "openDelay": 2
+                    },
+                    "borderRadius": "50%",
+                    "draggable": false
+                },
+                "tooltip": {
+                    "showTooltip": true,
+                    "tooltipMessage": "Hi! Get your free solar estimate",
+                    "tooltipBackgroundColor": "#ffffff",
+                    "tooltipTextColor": "#2c3e50",
+                    "tooltipFontSize": 14,
+                    "hideTooltipOnMobile": true
+                },
+                "allowProgrammaticMessage": false,
+                "chatWindow": {
+                    "borderRadiusStyle": "rounded",
+                    "avatarBorderRadius": 25,
+                    "messageBorderRadius": 12,
+                    "showTitle": true,
+                    "title": "Smith's Solar Assistant",
+                    "titleAvatarSrc": "https://www.svgrepo.com/show/525761/chat-round-dots.svg",
+                    "avatarSize": 30,
+                    "welcomeMessage": "Hello! I'm here to help you find the perfect solar solution for your Texas home. How can I help you today?",
+                    "errorMessage": "Please try again in a moment",
+                    "backgroundColor": "#ffffff",
+                    "height": 480,
+                    "width": 400,
+                    "fontSize": 15,
+                    "starterPrompts": [
+                        "How much can I save with solar?",
+                        "Get a free estimate",
+                        "What services do you offer?"
+                    ],
+                    "starterPromptFontSize": 14,
+                    "renderHTML": false,
+                    "clearChatOnReload": false,
+                    "showScrollbar": false,
+                    "botMessage": {
+                        "backgroundColor": "#1a5276",
+                        "textColor": "#ffffff",
+                        "showAvatar": true,
+                        "avatarSrc": "https://www.svgrepo.com/show/334455/bot.svg",
+                        "showCopyToClipboardIcon": false
+                    },
+                    "userMessage": {
+                        "backgroundColor": "#fff3e0",
+                        "textColor": "#2c3e50",
+                        "showAvatar": true,
+                        "avatarSrc": "https://www.svgrepo.com/show/532363/user-alt-1.svg"
+                    },
+                    "textInput": {
+                        "placeholder": "Type your message...",
+                        "backgroundColor": "#f8f9fa",
+                        "textColor": "#2c3e50",
+                        "sendButtonColor": "#f39c12",
+                        "maxChars": 500,
+                        "maxCharsWarningMessage": "Please keep your message under 500 characters.",
+                        "autoFocus": false,
+                        "enableInputHistory": true,
+                        "borderRadius": 25,
+                        "sendButtonBorderRadius": 50
+                    },
+                    "uploadsConfig": {
+                        "enabled": false,
+                        "acceptFileTypes": [
+                            "jpeg",
+                            "jpg",
+                            "png",
+                            "pdf"
+                        ],
+                        "maxFiles": 5,
+                        "maxSizeInMB": 10
+                    },
+                    "voiceInputConfig": {
+                        "enabled": false,
+                        "maxRecordingTime": 15,
+                        "recordingNotSupportedMessage": "Voice input is not supported in this browser"
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,822 @@
+{
+  "name": "Sales Copilot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sales-copilot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "082513f8-665f-4644-83a3-8d0ed22873f0",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        4192,
+        7680
+      ],
+      "webhookId": "8c38ac2e-c2ce-405d-be77-28ff587642ca"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "userMessage",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "7457fa8d-1ec5-4a54-a01c-784a52b880da",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4416,
+        7680
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Workflow Configuration').item.json.userMessage }}",
+        "options": {
+          "systemMessage": "You are a Sales Copilot assistant helping sales professionals with call prep, prospect research, CRM updates, and email follow-ups.\n\nYour capabilities:\n- Search and update CRM records in Airtable\n- Research prospects via LinkedIn (SerpAPI + Apify scraper)\n- Research companies and topics via web search (Firecrawl)\n- Send follow-up emails via Gmail (only after explicit user confirmation)\n\nCRM LOOKUP RULES:\n1. Search by phone (exact match), then name (exact match), then name (contains)\n2. If 0 matches: Ask user for more identifiers\n3. If 1 match: Proceed automatically\n4. If multiple matches: Ask user to choose by listing options\n5. NEVER assume which lead the user means - always search when needed\n\nCRM UPDATE RULES:\n1. Only update when user explicitly requests it\n2. Deal Stage must be one of: \"New\", \"Contacted\", \"Discovery Scheduled\", \"Proposal Sent\", \"Closed Won\", \"Closed Lost\"\n3. If user provides invalid Deal Stage, ask them to choose from allowed values\n4. Only append to Notes field if user explicitly asks to \"add this to notes\"\n5. Next Step field is free text\n\nEMAIL RULES:\n1. Draft email first, show it to user\n2. Only send after explicit user confirmation (\"send it\", \"yes send\", etc.)\n3. Never send without confirmation\n\nRESEARCH WORKFLOW:\n- For prospect research: Use SerpAPI to find LinkedIn URL, then Apify to scrape profile\n- For company/web research: Use Firecrawl Search, optionally follow up with Firecrawl Scrape for specific pages\n\nBe helpful, concise, and always confirm before taking actions like updating CRM or sending emails."
+        }
+      },
+      "id": "ec1a121b-d579-4f87-b7ed-804e928ea7df",
+      "name": "Sales Copilot Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        4704,
+        7680
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "cfde9f18-208f-4e9f-8f56-80c22614c755",
+      "name": "Gemini Flash 2.5",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4208,
+        7984
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6eRuAmUpDRdLACZQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('Workflow Configuration').item.json.sessionId }}",
+        "contextWindowLength": 30
+      },
+      "id": "11d24fd4-6d7c-423d-9baa-1e6dcb968fd5",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        4320,
+        7984
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search for lead records in Airtable CRM by phone (exact match), name (exact match), or name (contains). Provide search criteria as an Airtable formula. Examples: {Phone}=\"555-1234\" for exact phone match, {Name}=\"John Doe\" for exact name match, or FIND(LOWER(\"john\"), LOWER({Name})) for partial name match. Returns all matching records with fields: recordId, Name, Phone, Address, Deal Stage, Next Step, Notes, and other available fields. If multiple matches found, ask user to choose by providing distinguishing details like phone or address.",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appSkxg3L7iSCfa4m",
+          "mode": "list",
+          "cachedResultName": "Smith's Solar CRM",
+          "cachedResultUrl": "https://airtable.com/appSkxg3L7iSCfa4m"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblA7gYjUEEmum6qB",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appSkxg3L7iSCfa4m/tblA7gYjUEEmum6qB"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filter_By_Formula', `Airtable formula to search for leads (e.g., by phone or name)`, 'string') }}",
+        "options": {}
+      },
+      "id": "e957142c-9463-4c19-917f-d1a1f0b54a17",
+      "name": "Airtable Search Tool",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        4448,
+        7984
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "CcBl8qUD1yKP7a8f",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Update a lead record in Airtable CRM. ONLY use when user explicitly requests an update. Requires record ID from a previous search. Updatable fields:  Next Step (text field). ",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appSkxg3L7iSCfa4m",
+          "mode": "list",
+          "cachedResultName": "Smith's Solar CRM",
+          "cachedResultUrl": "https://airtable.com/appSkxg3L7iSCfa4m"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblA7gYjUEEmum6qB",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appSkxg3L7iSCfa4m/tblA7gYjUEEmum6qB"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('id__using_to_match_', `Airtable record ID (from search results)`, 'string') }}",
+            "Next Step": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Next_Step', `Next steps for the lead according to the sales rep post call.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created Time",
+              "displayName": "Created Time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Monthly Bill (USD)",
+              "displayName": "Monthly Bill (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lat",
+              "displayName": "Lat",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Lng",
+              "displayName": "Lng",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Estimated Annual Energy (kWh)",
+              "displayName": "Estimated Annual Energy (kWh)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Estimated Monthly Energy (kWh)",
+              "displayName": "Estimated Monthly Energy (kWh)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Max Panels",
+              "displayName": "Max Panels",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Chat Session ID",
+              "displayName": "Chat Session ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Qualified",
+              "displayName": "Qualified",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Qualification Reason",
+              "displayName": "Qualification Reason",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "State (from call)",
+              "displayName": "State (from call)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Homeowner (from call)",
+              "displayName": "Homeowner (from call)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cash Available Now (from call)",
+              "displayName": "Cash Available Now (from call)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Call Transcript",
+              "displayName": "Last Call Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Call At",
+              "displayName": "Last Call At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Call ID",
+              "displayName": "Last Call ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Call Match Status",
+              "displayName": "Call Match Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Matched",
+                  "value": "Matched"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deal Stage",
+              "displayName": "Deal Stage",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Contacted",
+                  "value": "Contacted"
+                },
+                {
+                  "name": "Discovery Scheduled",
+                  "value": "Discovery Scheduled"
+                },
+                {
+                  "name": "Proposal Sent",
+                  "value": "Proposal Sent"
+                },
+                {
+                  "name": "Closed Won",
+                  "value": "Closed Won"
+                },
+                {
+                  "name": "Closed Lost",
+                  "value": "Closed Lost"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Next Step",
+              "displayName": "Next Step",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "73dd7558-41d2-4f55-b2a6-20c9f7ded770",
+      "name": "Airtable Update Tool",
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        5344,
+        7984
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "CcBl8qUD1yKP7a8f",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Send a follow-up email via Gmail. Only use this after user explicitly confirms sending. Requires recipient email, subject, and message content.",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', `Recipient email address (of the lead we are wanting to email, can be fetched from the CRM if needed)`, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `Email subject line`, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Email body content in HTML or plain text`, 'string') }}",
+        "options": {}
+      },
+      "id": "4bf73c83-e28f-4246-95fa-3289874f3899",
+      "name": "Gmail Send Tool",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        5184,
+        7984
+      ],
+      "webhookId": "68904658-18f1-461a-aa44-7f7fc7675130",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jIMHj0EXVAm8wRxI",
+          "name": "Latest Admin"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the response for the webhook\nconst workflowConfig = $('Workflow Configuration').first().json;\nconst agentOutput = $input.first().json;\n\n// Extract sessionId from workflow configuration\nconst sessionId = workflowConfig.sessionId || 'default-session';\n\n// Extract reply from agent output\nconst reply = agentOutput.output || agentOutput.text || '';\n\n// Build toolCalls array from execution metadata\nconst toolCalls = [];\n\n// Check if there's tool usage information in the agent output\nif (agentOutput.intermediateSteps && Array.isArray(agentOutput.intermediateSteps)) {\n  agentOutput.intermediateSteps.forEach((step, index) => {\n    if (step.action && step.action.tool) {\n      toolCalls.push({\n        tool: step.action.tool,\n        input: step.action.toolInput || {},\n        output: step.observation || ''\n      });\n    }\n  });\n}\n\n// Return formatted response\nreturn {\n  json: {\n    sessionId: sessionId,\n    reply: reply,\n    toolCalls: toolCalls\n  }\n};"
+      },
+      "id": "1510cbe8-e512-4b6f-8f9e-831eb90d4f5d",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5104,
+        7680
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "7f153e4d-59b1-45d0-adbe-e23a604ea7ed",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        5360,
+        7680
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Find LinkedIn profile URLs via Google search using SerpAPI. Provide person name and optionally company or location. Returns LinkedIn profile URLs.",
+        "url": "https://serpapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `Search query (e.g., site:linkedin.com/in \"John Doe\" \"Company Name\")`, 'string') }}"
+            },
+            {
+              "name": "api_key",
+              "value": "9e410ff72e58319ffc4031e2393736707a4a795848a2a33c0130da657bae20d2"
+            },
+            {
+              "name": "num",
+              "value": "5"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "us"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0cca12bb-3053-4320-a6fc-8c787ce3662e",
+      "name": "SerpAPI LinkedIn Search",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        4608,
+        7984
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request and returns the response data. Example body:\n\n{\n  \"profileUrls\": [\n    \"https://www.linkedin.com/in/profile\"\n  ]\n}\n\ntool for scraping LinkedIn profile with URL \"scrape_linkedin\"",
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/dev_fusion~linkedin-profile-scraper/run-sync-get-dataset-items",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "YOUR_APIFY_API_TOKEN_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        4768,
+        7984
+      ],
+      "id": "bfe2955d-604f-4260-b33c-8235d9d524d6",
+      "name": "scrape_linkedin"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request and returns the response data. For scraping + researching companies and other information.\n\nExample:\n\n{\n  \"query\": \"<string>\",\n  \"limit\": 5,\n  \"sources\": [\"web\"],\n  \"scrapeOptions\": {\n    \"formats\": [\"extract\"],\n    \"onlyMainContent\": true,\n    \"extract\": {\n      \"prompt\": \"Summarize the main points of this page in 2-3 sentences\"\n    },\n    \"timeout\": 30000,\n    \"removeBase64Images\": true,\n    \"blockAds\": true\n  }\n}\n\nHere's the full search schema:\n\n> ## Documentation Index\n> Fetch the complete documentation index at: https://docs.firecrawl.dev/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Search\n\nThe search endpoint combines web search with Firecrawl's scraping capabilities to return full page content for any query.\n\nInclude `scrapeOptions` with `formats: [{\"type\": \"markdown\"}]` to get complete markdown content for each search result otherwise you will default to getting the results (url, title, description). You can also use other formats like `{\"type\": \"summary\"}` for condensed content.\n\n## Supported query operators\n\nWe support a variety of query operators that allow you to filter your searches better.\n\n| Operator      | Functionality                                                             | Examples                          |\n| ------------- | ------------------------------------------------------------------------- | --------------------------------- |\n| `\"\"`          | Non-fuzzy matches a string of text                                        | `\"Firecrawl\"`                     |\n| `-`           | Excludes certain keywords or negates other operators                      | `-bad`, `-site:firecrawl.dev`     |\n| `site:`       | Only returns results from a specified website                             | `site:firecrawl.dev`              |\n| `inurl:`      | Only returns results that include a word in the URL                       | `inurl:firecrawl`                 |\n| `allinurl:`   | Only returns results that include multiple words in the URL               | `allinurl:git firecrawl`          |\n| `intitle:`    | Only returns results that include a word in the title of the page         | `intitle:Firecrawl`               |\n| `allintitle:` | Only returns results that include multiple words in the title of the page | `allintitle:firecrawl playground` |\n| `related:`    | Only returns results that are related to a specific domain                | `related:firecrawl.dev`           |\n| `imagesize:`  | Only returns images with exact dimensions                                 | `imagesize:1920x1080`             |\n| `larger:`     | Only returns images larger than specified dimensions                      | `larger:1920x1080`                |\n\n## Location Parameter\n\nUse the `location` parameter to get geo-targeted search results. Format: `\"string\"`. Examples: `\"Germany\"`, `\"San Francisco,California,United States\"`.\n\nSee the [complete list of supported locations](https://firecrawl.dev/search_locations.json) for all available countries and languages.\n\n## Country Parameter\n\nUse the `country` parameter to specify the country for search results using ISO country codes. Default: `\"US\"`.\n\nExamples: `\"US\"`, `\"DE\"`, `\"FR\"`, `\"JP\"`, `\"UK\"`, `\"CA\"`.\n\n```json  theme={null}\n{\n  \"query\": \"restaurants\",\n  \"country\": \"DE\"\n}\n```\n\n## Categories Parameter\n\nFilter search results by specific categories using the `categories` parameter:\n\n* **`github`**: Search within GitHub repositories, code, issues, and documentation\n* **`research`**: Search academic and research websites (arXiv, Nature, IEEE, PubMed, etc.)\n* **`pdf`**: Search for PDFs\n\n### Example Usage\n\n```json  theme={null}\n{\n  \"query\": \"machine learning\",\n  \"categories\": [\"github\", \"research\"],\n  \"limit\": 10\n}\n```\n\n### Category Response\n\nEach result includes a `category` field indicating its source:\n\n```json  theme={null}\n{\n  \"success\": true,\n  \"data\": {\n    \"web\": [\n      {\n        \"url\": \"https://github.com/example/ml-project\",\n        \"title\": \"Machine Learning Project\",\n        \"description\": \"Implementation of ML algorithms\",\n        \"category\": \"github\"\n      },\n      {\n        \"url\": \"https://arxiv.org/abs/2024.12345\",\n        \"title\": \"ML Research Paper\",\n        \"description\": \"Latest advances in machine learning\",\n        \"category\": \"research\"\n      }\n    ]\n  }\n}\n```\n\n## Time-Based Search\n\nUse the `tbs` parameter to filter results by time periods, including custom date ranges. See the [Search Feature documentation](https://docs.firecrawl.dev/features/search#time-based-search) for detailed examples and supported formats.\n\n\n## OpenAPI\n\n````yaml api-reference/v2-openapi.json post /search\nopenapi: 3.0.0\ninfo:\n  title: Firecrawl API\n  version: v2\n  description: >-\n    API for interacting with Firecrawl services to perform web scraping and\n    crawling tasks.\n  contact:\n    name: Firecrawl Support\n    url: https://firecrawl.dev/support\n    email: support@firecrawl.dev\nservers:\n  - url: https://api.firecrawl.dev/v2\nsecurity:\n  - bearerAuth: []\npaths:\n  /search:\n    post:\n      tags:\n        - Search\n      summary: Search and optionally scrape search results\n      operationId: searchAndScrape\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                query:\n                  type: string\n                  description: The search query\n                limit:\n                  type: integer\n                  description: Maximum number of results to return\n                  default: 5\n                  maximum: 100\n                  minimum: 1\n                sources:\n                  type: array\n                  items:\n                    oneOf:\n                      - type: object\n                        title: Web\n                        properties:\n                          type:\n                            type: string\n                            enum:\n                              - web\n                          tbs:\n                            type: string\n                            description: >-\n                              Time-based search parameter. Supports predefined\n                              time ranges (`qdr:h`, `qdr:d`, `qdr:w`, `qdr:m`,\n                              `qdr:y`) and custom date ranges\n                              (`cdr:1,cd_min:MM/DD/YYYY,cd_max:MM/DD/YYYY`)\n                          location:\n                            type: string\n                            description: Location parameter for search results\n                        required:\n                          - type\n                      - type: object\n                        title: Images\n                        properties:\n                          type:\n                            type: string\n                            enum:\n                              - images\n                        required:\n                          - type\n                      - type: object\n                        title: News\n                        properties:\n                          type:\n                            type: string\n                            enum:\n                              - news\n                        required:\n                          - type\n                  description: >-\n                    Sources to search. Will determine the arrays available in\n                    the response. Defaults to ['web'].\n                  default:\n                    - web\n                categories:\n                  type: array\n                  items:\n                    oneOf:\n                      - type: object\n                        title: GitHub\n                        properties:\n                          type:\n                            type: string\n                            enum:\n                              - github\n                        required:\n                          - type\n                      - type: object\n                        title: Research\n                        properties:\n                          type:\n                            type: string\n                            enum:\n                              - research\n                        required:\n                          - type\n                      - type: object\n                        title: PDF\n                        properties:\n                          type:\n                            type: string\n                            enum:\n                              - pdf\n                        required:\n                          - type\n                  description: >-\n                    Categories to filter results by. Defaults to [], which means\n                    results will not be filtered by any categories.\n                tbs:\n                  type: string\n                  description: >-\n                    Time-based search parameter. Supports predefined time ranges\n                    (`qdr:h`, `qdr:d`, `qdr:w`, `qdr:m`, `qdr:y`) and custom\n                    date ranges (`cdr:1,cd_min:MM/DD/YYYY,cd_max:MM/DD/YYYY`)\n                location:\n                  type: string\n                  description: >-\n                    Location parameter for search results (e.g. `San\n                    Francisco,California,United States`). For best results, set\n                    both this and the `country` parameter.\n                country:\n                  type: string\n                  description: >-\n                    ISO country code for geo-targeting search results (e.g.\n                    `US`). For best results, set both this and the `location`\n                    parameter.\n                  default: US\n                timeout:\n                  type: integer\n                  description: Timeout in milliseconds\n                  default: 60000\n                ignoreInvalidURLs:\n                  type: boolean\n                  description: >-\n                    Excludes URLs from the search results that are invalid for\n                    other Firecrawl endpoints. This helps reduce errors if you\n                    are piping data from search into other Firecrawl API\n                    endpoints.\n                  default: false\n                scrapeOptions:\n                  allOf:\n                    - $ref: '#/components/schemas/ScrapeOptions'\n                  description: Options for scraping search results\n                  default: {}\n              required:\n                - query\n      responses:\n        '200':\n          description: Successful response\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  success:\n                    type: boolean\n                  data:\n                    type: object\n                    properties:\n                      web:\n                        type: array\n                        items:\n                          type: object\n                          properties:\n                            title:\n                              type: string\n                              description: Title from search result\n                            description:\n                              type: string\n                              description: Description from search result\n                            url:\n                              type: string\n                              description: URL of the search result\n                            markdown:\n                              type: string\n                              nullable: true\n                              description: Markdown content if scraping was requested\n                            html:\n                              type: string\n                              nullable: true\n                              description: HTML content if requested in formats\n                            rawHtml:\n                              type: string\n                              nullable: true\n                              description: Raw HTML content if requested in formats\n                            links:\n                              type: array\n                              items:\n                                type: string\n                              description: Links found if requested in formats\n                            screenshot:\n                              type: string\n                              nullable: true\n                              description: >-\n                                Screenshot URL if requested in formats.\n                                Screenshots expire after 24 hours and can no\n                                longer be downloaded.\n                            metadata:\n                              type: object\n                              properties:\n                                title:\n                                  type: string\n                                description:\n                                  type: string\n                                sourceURL:\n                                  type: string\n                                statusCode:\n                                  type: integer\n                                error:\n                                  type: string\n                                  nullable: true\n                      images:\n                        type: array\n                        items:\n                          type: object\n                          properties:\n                            title:\n                              type: string\n                              description: Title from search result\n                            imageUrl:\n                              type: string\n                              description: URL of the image\n                            imageWidth:\n                              type: integer\n                              description: Width of the image\n                            imageHeight:\n                              type: integer\n                              description: Height of the image\n                            url:\n                              type: string\n                              description: URL of the search result\n                            position:\n                              type: integer\n                              description: Position of the search result\n                      news:\n                        type: array\n                        items:\n                          type: object\n                          properties:\n                            title:\n                              type: string\n                              description: Title of the article\n                            snippet:\n                              type: string\n                              description: Snippet from the article\n                            url:\n                              type: string\n                              description: URL of the article\n                            date:\n                              type: string\n                              description: Date of the article\n                            imageUrl:\n                              type: string\n                              description: Image URL of the article\n                            position:\n                              type: integer\n                              description: Position of the article\n                            markdown:\n                              type: string\n                              nullable: true\n                              description: Markdown content if scraping was requested\n                            html:\n                              type: string\n                              nullable: true\n                              description: HTML content if requested in formats\n                            rawHtml:\n                              type: string\n                              nullable: true\n                              description: Raw HTML content if requested in formats\n                            links:\n                              type: array\n                              items:\n                                type: string\n                              description: Links found if requested in formats\n                            screenshot:\n                              type: string\n                              nullable: true\n                              description: >-\n                                Screenshot URL if requested in formats.\n                                Screenshots expire after 24 hours and can no\n                                longer be downloaded.\n                            metadata:\n                              type: object\n                              properties:\n                                title:\n                                  type: string\n                                description:\n                                  type: string\n                                sourceURL:\n                                  type: string\n                                statusCode:\n                                  type: integer\n                                error:\n                                  type: string\n                                  nullable: true\n                    description: >-\n                      The search results. The arrays available will depend on\n                      the sources you specified in the request. By default, the\n                      `web` array will be returned.\n                  warning:\n                    type: string\n                    nullable: true\n                    description: Warning message if any issues occurred\n                  id:\n                    type: string\n                    description: The ID of the search job\n                  creditsUsed:\n                    type: integer\n                    description: The number of credits used for the search\n        '408':\n          description: Request timeout\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  success:\n                    type: boolean\n                    example: false\n                  error:\n                    type: string\n                    example: Request timed out\n        '500':\n          description: Server error\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  success:\n                    type: boolean\n                    example: false\n                  code:\n                    type: string\n                    example: UNKNOWN_ERROR\n                  error:\n                    type: string\n                    example: An unexpected error occurred on the server.\n      security:\n        - bearerAuth: []\ncomponents:\n  schemas:\n    ScrapeOptions:\n      type: object\n      properties:\n        formats:\n          $ref: '#/components/schemas/Formats'\n        onlyMainContent:\n          type: boolean\n          description: >-\n            Only return the main content of the page excluding headers, navs,\n            footers, etc.\n          default: true\n        includeTags:\n          type: array\n          items:\n            type: string\n          description: Tags to include in the output.\n        excludeTags:\n          type: array\n          items:\n            type: string\n          description: Tags to exclude from the output.\n        maxAge:\n          type: integer\n          description: >-\n            Returns a cached version of the page if it is younger than this age\n            in milliseconds. If a cached version of the page is older than this\n            value, the page will be scraped. If you do not need extremely fresh\n            data, enabling this can speed up your scrapes by 500%. Defaults to 2\n            days.\n          default: 172800000\n        headers:\n          type: object\n          description: >-\n            Headers to send with the request. Can be used to send cookies,\n            user-agent, etc.\n        waitFor:\n          type: integer\n          description: >-\n            Specify a delay in milliseconds before fetching the content,\n            allowing the page sufficient time to load. This waiting time is in\n            addition to Firecrawl's smart wait feature.\n          default: 0\n        mobile:\n          type: boolean\n          description: >-\n            Set to true if you want to emulate scraping from a mobile device.\n            Useful for testing responsive pages and taking mobile screenshots.\n          default: false\n        skipTlsVerification:\n          type: boolean\n          description: Skip TLS certificate verification when making requests.\n          default: true\n        timeout:\n          type: integer\n          description: >-\n            Timeout in milliseconds for the request. Default is 30000 (30\n            seconds). Maximum is 300000 (300 seconds).\n          default: 30000\n          maximum: 300000\n        parsers:\n          type: array\n          description: >-\n            Controls how files are processed during scraping. When \"pdf\" is\n            included (default), the PDF content is extracted and converted to\n            markdown format, with billing based on the number of pages (1 credit\n            per page). When an empty array is passed, the PDF file is returned\n            in base64 encoding with a flat rate of 1 credit for the entire PDF.\n          items:\n            oneOf:\n              - type: object\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - pdf\n                  maxPages:\n                    type: integer\n                    minimum: 1\n                    maximum: 10000\n                    description: >-\n                      Maximum number of pages to parse from the PDF. Must be a\n                      positive integer up to 10000.\n                required:\n                  - type\n                additionalProperties: false\n          default:\n            - pdf\n        actions:\n          type: array\n          description: Actions to perform on the page before grabbing the content\n          items:\n            oneOf:\n              - title: Wait\n                oneOf:\n                  - type: object\n                    title: Wait by Duration\n                    properties:\n                      type:\n                        type: string\n                        enum:\n                          - wait\n                        description: Wait for a specified amount of milliseconds\n                      milliseconds:\n                        type: integer\n                        minimum: 1\n                        description: Number of milliseconds to wait\n                    required:\n                      - type\n                      - milliseconds\n                    additionalProperties: false\n                  - type: object\n                    title: Wait for Element\n                    properties:\n                      type:\n                        type: string\n                        enum:\n                          - wait\n                        description: Wait for a specific element to appear\n                      selector:\n                        type: string\n                        description: CSS selector to wait for\n                        example: '#my-element'\n                    required:\n                      - type\n                      - selector\n                    additionalProperties: false\n              - type: object\n                title: Screenshot\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - screenshot\n                    description: >-\n                      Take a screenshot. The links will be in the response's\n                      `actions.screenshots` array.\n                  fullPage:\n                    type: boolean\n                    description: >-\n                      Whether to capture a full-page screenshot (ignores\n                      viewport.height) or limit to the current viewport.\n                    default: false\n                  quality:\n                    type: integer\n                    description: >-\n                      The quality of the screenshot, from 1 to 100. 100 is the\n                      highest quality.\n                  viewport:\n                    type: object\n                    properties:\n                      width:\n                        type: integer\n                        description: The width of the viewport in pixels\n                      height:\n                        type: integer\n                        description: The height of the viewport in pixels\n                    required:\n                      - width\n                      - height\n                required:\n                  - type\n              - type: object\n                title: Click\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - click\n                    description: Click on an element\n                  selector:\n                    type: string\n                    description: Query selector to find the element by\n                    example: '#load-more-button'\n                  all:\n                    type: boolean\n                    description: >-\n                      Clicks all elements matched by the selector, not just the\n                      first one. Does not throw an error if no elements match\n                      the selector.\n                    default: false\n                required:\n                  - type\n                  - selector\n              - type: object\n                title: Write text\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - write\n                    description: >-\n                      Write text into an input field, text area, or\n                      contenteditable element. Note: You must first focus the\n                      element using a 'click' action before writing. The text\n                      will be typed character by character to simulate keyboard\n                      input.\n                  text:\n                    type: string\n                    description: Text to type\n                    example: Hello, world!\n                required:\n                  - type\n                  - text\n              - type: object\n                title: Press a key\n                description: >-\n                  Press a key on the page. See\n                  https://asawicki.info/nosense/doc/devices/keyboard/key_codes.html\n                  for key codes.\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - press\n                    description: Press a key on the page\n                  key:\n                    type: string\n                    description: Key to press\n                    example: Enter\n                required:\n                  - type\n                  - key\n              - type: object\n                title: Scroll\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - scroll\n                    description: Scroll the page or a specific element\n                  direction:\n                    type: string\n                    enum:\n                      - up\n                      - down\n                    description: Direction to scroll\n                    default: down\n                  selector:\n                    type: string\n                    description: Query selector for the element to scroll\n                    example: '#my-element'\n                required:\n                  - type\n              - type: object\n                title: Scrape\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - scrape\n                    description: >-\n                      Scrape the current page content, returns the url and the\n                      html.\n                required:\n                  - type\n              - type: object\n                title: Execute JavaScript\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - executeJavascript\n                    description: Execute JavaScript code on the page\n                  script:\n                    type: string\n                    description: JavaScript code to execute\n                    example: document.querySelector('.button').click();\n                required:\n                  - type\n                  - script\n              - type: object\n                title: Generate PDF\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - pdf\n                    description: >-\n                      Generate a PDF of the current page. The PDF will be\n                      returned in the `actions.pdfs` array of the response.\n                  format:\n                    type: string\n                    enum:\n                      - A0\n                      - A1\n                      - A2\n                      - A3\n                      - A4\n                      - A5\n                      - A6\n                      - Letter\n                      - Legal\n                      - Tabloid\n                      - Ledger\n                    description: The page size of the resulting PDF\n                    default: Letter\n                  landscape:\n                    type: boolean\n                    description: Whether to generate the PDF in landscape orientation\n                    default: false\n                  scale:\n                    type: number\n                    description: The scale multiplier of the resulting PDF\n                    default: 1\n                required:\n                  - type\n        location:\n          type: object\n          description: >-\n            Location settings for the request. When specified, this will use an\n            appropriate proxy if available and emulate the corresponding\n            language and timezone settings. Defaults to 'US' if not specified.\n          properties:\n            country:\n              type: string\n              description: ISO 3166-1 alpha-2 country code (e.g., 'US', 'AU', 'DE', 'JP')\n              pattern: ^[A-Z]{2}$\n              default: US\n            languages:\n              type: array\n              description: >-\n                Preferred languages and locales for the request in order of\n                priority. Defaults to the language of the specified location.\n                See\n                https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language\n              items:\n                type: string\n                example: en-US\n        removeBase64Images:\n          type: boolean\n          description: >-\n            Removes all base 64 images from the output, which may be\n            overwhelmingly long. The image's alt text remains in the output, but\n            the URL is replaced with a placeholder.\n          default: true\n        blockAds:\n          type: boolean\n          description: Enables ad-blocking and cookie popup blocking.\n          default: true\n        proxy:\n          type: string\n          enum:\n            - basic\n            - stealth\n            - auto\n          description: |-\n            Specifies the type of proxy to use.\n\n             - **basic**: Proxies for scraping sites with none to basic anti-bot solutions. Fast and usually works.\n             - **stealth**: Stealth proxies for scraping sites with advanced anti-bot solutions. Slower, but more reliable on certain sites. Costs up to 5 credits per request.\n             - **auto**: Firecrawl will automatically retry scraping with stealth proxies if the basic proxy fails. If the retry with stealth is successful, 5 credits will be billed for the scrape. If the first attempt with basic is successful, only the regular cost will be billed.\n          default: auto\n        storeInCache:\n          type: boolean\n          description: >-\n            If true, the page will be stored in the Firecrawl index and cache.\n            Setting this to false is useful if your scraping activity may have\n            data protection concerns. Using some parameters associated with\n            sensitive scraping (e.g. actions, headers) will force this parameter\n            to be false.\n          default: true\n    Formats:\n      type: array\n      items:\n        oneOf:\n          - type: object\n            title: Markdown\n            properties:\n              type:\n                type: string\n                enum:\n                  - markdown\n            required:\n              - type\n          - type: object\n            title: Summary\n            properties:\n              type:\n                type: string\n                enum:\n                  - summary\n            required:\n              - type\n          - type: object\n            title: HTML\n            properties:\n              type:\n                type: string\n                enum:\n                  - html\n            required:\n              - type\n          - type: object\n            title: Raw HTML\n            properties:\n              type:\n                type: string\n                enum:\n                  - rawHtml\n            required:\n              - type\n          - type: object\n            title: Links\n            properties:\n              type:\n                type: string\n                enum:\n                  - links\n            required:\n              - type\n          - type: object\n            title: Images\n            properties:\n              type:\n                type: string\n                enum:\n                  - images\n            required:\n              - type\n          - type: object\n            title: Screenshot\n            properties:\n              type:\n                type: string\n                enum:\n                  - screenshot\n              fullPage:\n                type: boolean\n                description: >-\n                  Whether to capture a full-page screenshot (ignores\n                  viewport.height) or limit to the current viewport.\n                default: false\n              quality:\n                type: integer\n                description: >-\n                  The quality of the screenshot, from 1 to 100. 100 is the\n                  highest quality.\n              viewport:\n                type: object\n                properties:\n                  width:\n                    type: integer\n                    description: The width of the viewport in pixels\n                  height:\n                    type: integer\n                    description: The height of the viewport in pixels\n                required:\n                  - width\n                  - height\n            required:\n              - type\n          - type: object\n            title: JSON\n            properties:\n              type:\n                type: string\n                enum:\n                  - json\n              schema:\n                type: object\n                description: >-\n                  The schema to use for the JSON output. Must conform to [JSON\n                  Schema](https://json-schema.org/).\n              prompt:\n                type: string\n                description: The prompt to use for the JSON output\n            required:\n              - type\n          - type: object\n            title: Change Tracking\n            properties:\n              type:\n                type: string\n                enum:\n                  - changeTracking\n              modes:\n                type: array\n                items:\n                  type: string\n                  enum:\n                    - git-diff\n                    - json\n                description: >-\n                  The mode to use for change tracking. 'git-diff' provides a\n                  detailed diff, and 'json' compares extracted JSON data.\n              schema:\n                type: object\n                description: >-\n                  Schema for JSON extraction when using 'json' mode. Defines the\n                  structure of data to extract and compare. Must conform to\n                  [JSON Schema](https://json-schema.org/).\n              prompt:\n                type: string\n                description: >-\n                  Prompt to use for change tracking when using 'json' mode. If\n                  not provided, the default prompt will be used.\n              tag:\n                type: string\n                nullable: true\n                default: null\n                description: >-\n                  Tag to use for change tracking. Tags can separate change\n                  tracking history into separate \"branches\", where change\n                  tracking with a specific tagwill only compare to scrapes made\n                  in the same tag. If not provided, the default tag (null) will\n                  be used.\n            required:\n              - type\n          - type: object\n            title: Branding\n            properties:\n              type:\n                type: string\n                enum:\n                  - branding\n            required:\n              - type\n      description: >-\n        Output formats to include in the response. You can specify one or more\n        formats, either as strings (e.g., `'markdown'`) or as objects with\n        additional options (e.g., `{ type: 'json', schema: {...} }`). Some\n        formats require specific options to be set. Example: `['markdown', {\n        type: 'json', schema: {...} }]`.\n      default:\n        - markdown\n  securitySchemes:\n    bearerAuth:\n      type: http\n      scheme: bearer\n\n````",
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_FIRECRAWL_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        4912,
+        7984
+      ],
+      "id": "a4e51955-ba28-4129-8369-8d804c869f00",
+      "name": "research"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Makes an HTTP request and returns the response data. This scrapes individual webpages. The full API schema:\n\n> ## Documentation Index\n> Fetch the complete documentation index at: https://docs.firecrawl.dev/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Scrape\n\n## Browser Actions\n\nYou can perform browser interactions before scraping by using the `actions` parameter. This allows you to:\n\n* Wait for elements to load\n* Click buttons or links\n* Fill form fields\n* Press keys\n* Scroll pages\n* Take screenshots\n* Execute custom JavaScript\n* Generate PDFs\n\nSupported actions include `wait`, `click`, `write`, `press`, `scroll`, `screenshot`, `scrape`, `executeJavascript`, and `pdf`. For detailed documentation with examples, see the [Advanced Scraping Guide](https://docs.firecrawl.dev/advanced-scraping-guide#actions-actions).\n\n\n## OpenAPI\n\n````yaml api-reference/v2-openapi.json post /scrape\nopenapi: 3.0.0\ninfo:\n  title: Firecrawl API\n  version: v2\n  description: >-\n    API for interacting with Firecrawl services to perform web scraping and\n    crawling tasks.\n  contact:\n    name: Firecrawl Support\n    url: https://firecrawl.dev/support\n    email: support@firecrawl.dev\nservers:\n  - url: https://api.firecrawl.dev/v2\nsecurity:\n  - bearerAuth: []\npaths:\n  /scrape:\n    post:\n      tags:\n        - Scraping\n      summary: Scrape a single URL and optionally extract information using an LLM\n      operationId: scrapeAndExtractFromUrl\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              allOf:\n                - type: object\n                  properties:\n                    url:\n                      type: string\n                      format: uri\n                      description: The URL to scrape\n                  required:\n                    - url\n                - $ref: '#/components/schemas/ScrapeOptions'\n                - type: object\n                  properties:\n                    zeroDataRetention:\n                      type: boolean\n                      default: false\n                      description: >-\n                        If true, this will enable zero data retention for this\n                        scrape. To enable this feature, please contact\n                        help@firecrawl.dev\n      responses:\n        '200':\n          description: Successful response\n          content:\n            application/json:\n              schema:\n                $ref: '#/components/schemas/ScrapeResponse'\n        '402':\n          description: Payment required\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  error:\n                    type: string\n                    example: Payment required to access this resource.\n        '429':\n          description: Too many requests\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  error:\n                    type: string\n                    example: >-\n                      Request rate limit exceeded. Please wait and try again\n                      later.\n        '500':\n          description: Server error\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  success:\n                    type: boolean\n                    example: false\n                  code:\n                    type: string\n                    example: UNKNOWN_ERROR\n                  error:\n                    type: string\n                    example: An unexpected error occurred on the server.\n      security:\n        - bearerAuth: []\ncomponents:\n  schemas:\n    ScrapeOptions:\n      type: object\n      properties:\n        formats:\n          $ref: '#/components/schemas/Formats'\n        onlyMainContent:\n          type: boolean\n          description: >-\n            Only return the main content of the page excluding headers, navs,\n            footers, etc.\n          default: true\n        includeTags:\n          type: array\n          items:\n            type: string\n          description: Tags to include in the output.\n        excludeTags:\n          type: array\n          items:\n            type: string\n          description: Tags to exclude from the output.\n        maxAge:\n          type: integer\n          description: >-\n            Returns a cached version of the page if it is younger than this age\n            in milliseconds. If a cached version of the page is older than this\n            value, the page will be scraped. If you do not need extremely fresh\n            data, enabling this can speed up your scrapes by 500%. Defaults to 2\n            days.\n          default: 172800000\n        headers:\n          type: object\n          description: >-\n            Headers to send with the request. Can be used to send cookies,\n            user-agent, etc.\n        waitFor:\n          type: integer\n          description: >-\n            Specify a delay in milliseconds before fetching the content,\n            allowing the page sufficient time to load. This waiting time is in\n            addition to Firecrawl's smart wait feature.\n          default: 0\n        mobile:\n          type: boolean\n          description: >-\n            Set to true if you want to emulate scraping from a mobile device.\n            Useful for testing responsive pages and taking mobile screenshots.\n          default: false\n        skipTlsVerification:\n          type: boolean\n          description: Skip TLS certificate verification when making requests.\n          default: true\n        timeout:\n          type: integer\n          description: >-\n            Timeout in milliseconds for the request. Default is 30000 (30\n            seconds). Maximum is 300000 (300 seconds).\n          default: 30000\n          maximum: 300000\n        parsers:\n          type: array\n          description: >-\n            Controls how files are processed during scraping. When \"pdf\" is\n            included (default), the PDF content is extracted and converted to\n            markdown format, with billing based on the number of pages (1 credit\n            per page). When an empty array is passed, the PDF file is returned\n            in base64 encoding with a flat rate of 1 credit for the entire PDF.\n          items:\n            oneOf:\n              - type: object\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - pdf\n                  maxPages:\n                    type: integer\n                    minimum: 1\n                    maximum: 10000\n                    description: >-\n                      Maximum number of pages to parse from the PDF. Must be a\n                      positive integer up to 10000.\n                required:\n                  - type\n                additionalProperties: false\n          default:\n            - pdf\n        actions:\n          type: array\n          description: Actions to perform on the page before grabbing the content\n          items:\n            oneOf:\n              - title: Wait\n                oneOf:\n                  - type: object\n                    title: Wait by Duration\n                    properties:\n                      type:\n                        type: string\n                        enum:\n                          - wait\n                        description: Wait for a specified amount of milliseconds\n                      milliseconds:\n                        type: integer\n                        minimum: 1\n                        description: Number of milliseconds to wait\n                    required:\n                      - type\n                      - milliseconds\n                    additionalProperties: false\n                  - type: object\n                    title: Wait for Element\n                    properties:\n                      type:\n                        type: string\n                        enum:\n                          - wait\n                        description: Wait for a specific element to appear\n                      selector:\n                        type: string\n                        description: CSS selector to wait for\n                        example: '#my-element'\n                    required:\n                      - type\n                      - selector\n                    additionalProperties: false\n              - type: object\n                title: Screenshot\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - screenshot\n                    description: >-\n                      Take a screenshot. The links will be in the response's\n                      `actions.screenshots` array.\n                  fullPage:\n                    type: boolean\n                    description: >-\n                      Whether to capture a full-page screenshot (ignores\n                      viewport.height) or limit to the current viewport.\n                    default: false\n                  quality:\n                    type: integer\n                    description: >-\n                      The quality of the screenshot, from 1 to 100. 100 is the\n                      highest quality.\n                  viewport:\n                    type: object\n                    properties:\n                      width:\n                        type: integer\n                        description: The width of the viewport in pixels\n                      height:\n                        type: integer\n                        description: The height of the viewport in pixels\n                    required:\n                      - width\n                      - height\n                required:\n                  - type\n              - type: object\n                title: Click\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - click\n                    description: Click on an element\n                  selector:\n                    type: string\n                    description: Query selector to find the element by\n                    example: '#load-more-button'\n                  all:\n                    type: boolean\n                    description: >-\n                      Clicks all elements matched by the selector, not just the\n                      first one. Does not throw an error if no elements match\n                      the selector.\n                    default: false\n                required:\n                  - type\n                  - selector\n              - type: object\n                title: Write text\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - write\n                    description: >-\n                      Write text into an input field, text area, or\n                      contenteditable element. Note: You must first focus the\n                      element using a 'click' action before writing. The text\n                      will be typed character by character to simulate keyboard\n                      input.\n                  text:\n                    type: string\n                    description: Text to type\n                    example: Hello, world!\n                required:\n                  - type\n                  - text\n              - type: object\n                title: Press a key\n                description: >-\n                  Press a key on the page. See\n                  https://asawicki.info/nosense/doc/devices/keyboard/key_codes.html\n                  for key codes.\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - press\n                    description: Press a key on the page\n                  key:\n                    type: string\n                    description: Key to press\n                    example: Enter\n                required:\n                  - type\n                  - key\n              - type: object\n                title: Scroll\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - scroll\n                    description: Scroll the page or a specific element\n                  direction:\n                    type: string\n                    enum:\n                      - up\n                      - down\n                    description: Direction to scroll\n                    default: down\n                  selector:\n                    type: string\n                    description: Query selector for the element to scroll\n                    example: '#my-element'\n                required:\n                  - type\n              - type: object\n                title: Scrape\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - scrape\n                    description: >-\n                      Scrape the current page content, returns the url and the\n                      html.\n                required:\n                  - type\n              - type: object\n                title: Execute JavaScript\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - executeJavascript\n                    description: Execute JavaScript code on the page\n                  script:\n                    type: string\n                    description: JavaScript code to execute\n                    example: document.querySelector('.button').click();\n                required:\n                  - type\n                  - script\n              - type: object\n                title: Generate PDF\n                properties:\n                  type:\n                    type: string\n                    enum:\n                      - pdf\n                    description: >-\n                      Generate a PDF of the current page. The PDF will be\n                      returned in the `actions.pdfs` array of the response.\n                  format:\n                    type: string\n                    enum:\n                      - A0\n                      - A1\n                      - A2\n                      - A3\n                      - A4\n                      - A5\n                      - A6\n                      - Letter\n                      - Legal\n                      - Tabloid\n                      - Ledger\n                    description: The page size of the resulting PDF\n                    default: Letter\n                  landscape:\n                    type: boolean\n                    description: Whether to generate the PDF in landscape orientation\n                    default: false\n                  scale:\n                    type: number\n                    description: The scale multiplier of the resulting PDF\n                    default: 1\n                required:\n                  - type\n        location:\n          type: object\n          description: >-\n            Location settings for the request. When specified, this will use an\n            appropriate proxy if available and emulate the corresponding\n            language and timezone settings. Defaults to 'US' if not specified.\n          properties:\n            country:\n              type: string\n              description: ISO 3166-1 alpha-2 country code (e.g., 'US', 'AU', 'DE', 'JP')\n              pattern: ^[A-Z]{2}$\n              default: US\n            languages:\n              type: array\n              description: >-\n                Preferred languages and locales for the request in order of\n                priority. Defaults to the language of the specified location.\n                See\n                https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Language\n              items:\n                type: string\n                example: en-US\n        removeBase64Images:\n          type: boolean\n          description: >-\n            Removes all base 64 images from the output, which may be\n            overwhelmingly long. The image's alt text remains in the output, but\n            the URL is replaced with a placeholder.\n          default: true\n        blockAds:\n          type: boolean\n          description: Enables ad-blocking and cookie popup blocking.\n          default: true\n        proxy:\n          type: string\n          enum:\n            - basic\n            - stealth\n            - auto\n          description: |-\n            Specifies the type of proxy to use.\n\n             - **basic**: Proxies for scraping sites with none to basic anti-bot solutions. Fast and usually works.\n             - **stealth**: Stealth proxies for scraping sites with advanced anti-bot solutions. Slower, but more reliable on certain sites. Costs up to 5 credits per request.\n             - **auto**: Firecrawl will automatically retry scraping with stealth proxies if the basic proxy fails. If the retry with stealth is successful, 5 credits will be billed for the scrape. If the first attempt with basic is successful, only the regular cost will be billed.\n          default: auto\n        storeInCache:\n          type: boolean\n          description: >-\n            If true, the page will be stored in the Firecrawl index and cache.\n            Setting this to false is useful if your scraping activity may have\n            data protection concerns. Using some parameters associated with\n            sensitive scraping (e.g. actions, headers) will force this parameter\n            to be false.\n          default: true\n    ScrapeResponse:\n      type: object\n      properties:\n        success:\n          type: boolean\n        data:\n          type: object\n          properties:\n            markdown:\n              type: string\n            summary:\n              type: string\n              nullable: true\n              description: Summary of the page if `summary` is in `formats`\n            html:\n              type: string\n              nullable: true\n              description: HTML version of the content on page if `html` is in `formats`\n            rawHtml:\n              type: string\n              nullable: true\n              description: Raw HTML content of the page if `rawHtml` is in `formats`\n            screenshot:\n              type: string\n              nullable: true\n              description: >-\n                Screenshot of the page if `screenshot` is in `formats`.\n                Screenshots expire after 24 hours and can no longer be\n                downloaded.\n            links:\n              type: array\n              items:\n                type: string\n              description: List of links on the page if `links` is in `formats`\n            actions:\n              type: object\n              nullable: true\n              description: >-\n                Results of the actions specified in the `actions` parameter.\n                Only present if the `actions` parameter was provided in the\n                request\n              properties:\n                screenshots:\n                  type: array\n                  description: >-\n                    Screenshot URLs, in the same order as the screenshot actions\n                    provided.\n                  items:\n                    type: string\n                    format: url\n                scrapes:\n                  type: array\n                  description: >-\n                    Scrape contents, in the same order as the scrape actions\n                    provided.\n                  items:\n                    type: object\n                    properties:\n                      url:\n                        type: string\n                      html:\n                        type: string\n                javascriptReturns:\n                  type: array\n                  description: >-\n                    JavaScript return values, in the same order as the\n                    executeJavascript actions provided.\n                  items:\n                    type: object\n                    properties:\n                      type:\n                        type: string\n                      value: {}\n                pdfs:\n                  type: array\n                  description: >-\n                    PDFs generated, in the same order as the pdf actions\n                    provided.\n                  items:\n                    type: string\n            metadata:\n              type: object\n              properties:\n                title:\n                  oneOf:\n                    - type: string\n                    - type: array\n                      items:\n                        type: string\n                  description: >-\n                    Title extracted from the page, can be a string or array of\n                    strings\n                description:\n                  oneOf:\n                    - type: string\n                    - type: array\n                      items:\n                        type: string\n                  description: >-\n                    Description extracted from the page, can be a string or\n                    array of strings\n                language:\n                  oneOf:\n                    - type: string\n                    - type: array\n                      items:\n                        type: string\n                  nullable: true\n                  description: >-\n                    Language extracted from the page, can be a string or array\n                    of strings\n                sourceURL:\n                  type: string\n                  format: uri\n                keywords:\n                  oneOf:\n                    - type: string\n                    - type: array\n                      items:\n                        type: string\n                  description: >-\n                    Keywords extracted from the page, can be a string or array\n                    of strings\n                ogLocaleAlternate:\n                  type: array\n                  items:\n                    type: string\n                  description: Alternative locales for the page\n                '<any other metadata> ':\n                  oneOf:\n                    - type: string\n                    - type: array\n                      items:\n                        type: string\n                  description: >-\n                    Other metadata extracted from HTML, can be a string or array\n                    of strings\n                statusCode:\n                  type: integer\n                  description: The status code of the page\n                error:\n                  type: string\n                  nullable: true\n                  description: The error message of the page\n            warning:\n              type: string\n              nullable: true\n              description: >-\n                Can be displayed when using LLM Extraction. Warning message will\n                let you know any issues with the extraction.\n            changeTracking:\n              type: object\n              nullable: true\n              description: >-\n                Change tracking information if `changeTracking` is in `formats`.\n                Only present when the `changeTracking` format is requested.\n              properties:\n                previousScrapeAt:\n                  type: string\n                  format: date-time\n                  nullable: true\n                  description: >-\n                    The timestamp of the previous scrape that the current page\n                    is being compared against. Null if no previous scrape\n                    exists.\n                changeStatus:\n                  type: string\n                  enum:\n                    - new\n                    - same\n                    - changed\n                    - removed\n                  description: >-\n                    The result of the comparison between the two page versions.\n                    'new' means this page did not exist before, 'same' means\n                    content has not changed, 'changed' means content has\n                    changed, 'removed' means the page was removed.\n                visibility:\n                  type: string\n                  enum:\n                    - visible\n                    - hidden\n                  description: >-\n                    The visibility of the current page/URL. 'visible' means the\n                    URL was discovered through an organic route (links or\n                    sitemap), 'hidden' means the URL was discovered through\n                    memory from previous crawls.\n                diff:\n                  type: string\n                  nullable: true\n                  description: >-\n                    Git-style diff of changes when using 'git-diff' mode. Only\n                    present when the mode is set to 'git-diff'.\n                json:\n                  type: object\n                  nullable: true\n                  description: >-\n                    JSON comparison results when using 'json' mode. Only present\n                    when the mode is set to 'json'. This will emit a list of all\n                    the keys and their values from the `previous` and `current`\n                    scrapes based on the type defined in the `schema`. Example\n                    [here](/features/change-tracking)\n            branding:\n              type: object\n              nullable: true\n              description: >-\n                Branding information extracted from the page if `branding` is in\n                `formats`. Includes colors, fonts, typography, spacing,\n                components, and more.\n    Formats:\n      type: array\n      items:\n        oneOf:\n          - type: object\n            title: Markdown\n            properties:\n              type:\n                type: string\n                enum:\n                  - markdown\n            required:\n              - type\n          - type: object\n            title: Summary\n            properties:\n              type:\n                type: string\n                enum:\n                  - summary\n            required:\n              - type\n          - type: object\n            title: HTML\n            properties:\n              type:\n                type: string\n                enum:\n                  - html\n            required:\n              - type\n          - type: object\n            title: Raw HTML\n            properties:\n              type:\n                type: string\n                enum:\n                  - rawHtml\n            required:\n              - type\n          - type: object\n            title: Links\n            properties:\n              type:\n                type: string\n                enum:\n                  - links\n            required:\n              - type\n          - type: object\n            title: Images\n            properties:\n              type:\n                type: string\n                enum:\n                  - images\n            required:\n              - type\n          - type: object\n            title: Screenshot\n            properties:\n              type:\n                type: string\n                enum:\n                  - screenshot\n              fullPage:\n                type: boolean\n                description: >-\n                  Whether to capture a full-page screenshot (ignores\n                  viewport.height) or limit to the current viewport.\n                default: false\n              quality:\n                type: integer\n                description: >-\n                  The quality of the screenshot, from 1 to 100. 100 is the\n                  highest quality.\n              viewport:\n                type: object\n                properties:\n                  width:\n                    type: integer\n                    description: The width of the viewport in pixels\n                  height:\n                    type: integer\n                    description: The height of the viewport in pixels\n                required:\n                  - width\n                  - height\n            required:\n              - type\n          - type: object\n            title: JSON\n            properties:\n              type:\n                type: string\n                enum:\n                  - json\n              schema:\n                type: object\n                description: >-\n                  The schema to use for the JSON output. Must conform to [JSON\n                  Schema](https://json-schema.org/).\n              prompt:\n                type: string\n                description: The prompt to use for the JSON output\n            required:\n              - type\n          - type: object\n            title: Change Tracking\n            properties:\n              type:\n                type: string\n                enum:\n                  - changeTracking\n              modes:\n                type: array\n                items:\n                  type: string\n                  enum:\n                    - git-diff\n                    - json\n                description: >-\n                  The mode to use for change tracking. 'git-diff' provides a\n                  detailed diff, and 'json' compares extracted JSON data.\n              schema:\n                type: object\n                description: >-\n                  Schema for JSON extraction when using 'json' mode. Defines the\n                  structure of data to extract and compare. Must conform to\n                  [JSON Schema](https://json-schema.org/).\n              prompt:\n                type: string\n                description: >-\n                  Prompt to use for change tracking when using 'json' mode. If\n                  not provided, the default prompt will be used.\n              tag:\n                type: string\n                nullable: true\n                default: null\n                description: >-\n                  Tag to use for change tracking. Tags can separate change\n                  tracking history into separate \"branches\", where change\n                  tracking with a specific tagwill only compare to scrapes made\n                  in the same tag. If not provided, the default tag (null) will\n                  be used.\n            required:\n              - type\n          - type: object\n            title: Branding\n            properties:\n              type:\n                type: string\n                enum:\n                  - branding\n            required:\n              - type\n      description: >-\n        Output formats to include in the response. You can specify one or more\n        formats, either as strings (e.g., `'markdown'`) or as objects with\n        additional options (e.g., `{ type: 'json', schema: {...} }`). Some\n        formats require specific options to be set. Example: `['markdown', {\n        type: 'json', schema: {...} }]`.\n      default:\n        - markdown\n  securitySchemes:\n    bearerAuth:\n      type: http\n      scheme: bearer\n\n````",
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_FIRECRAWL_API_KEY_HERE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('JSON', ``, 'json') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        5040,
+        7984
+      ],
+      "id": "ecff61e9-90ae-4eb9-b70a-1c577efe5b50",
+      "name": "scrape_page"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Flash 2.5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Search Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable Update Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Send Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI LinkedIn Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scrape_linkedin": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "research": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "scrape_page": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sales Copilot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Copilot Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0558186a-4580-4d34-ae52-d635dd2d0b2f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9f71fdbdff343c16880bcc76dd9e56bbd5679c07afb44ebea84e8a8aa87a3233"
+  },
+  "id": "v5XKWE2GJVPLjpez",
+  "tags": []
+}
